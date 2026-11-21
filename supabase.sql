@@ -1,0 +1,11 @@
+create table if not exists profiles(id uuid primary key references auth.users(id) on delete cascade, name text, created_at timestamptz default now());
+create table if not exists settings(user_id uuid primary key references auth.users(id) on delete cascade, gross_salary numeric default 0, advance_pct numeric default 40, inss_pct numeric default 0, assist_pct numeric default 0, life_insurance numeric default 0, negocial numeric default 0, updated_at timestamptz default now());
+create table if not exists transactions(id uuid primary key default gen_random_uuid(), user_id uuid references auth.users(id) on delete cascade, type text not null, amount numeric not null default 0, category text not null default 'Outros', icon text not null default '⋯', description text default '', date date not null default current_date, payment_method text default 'Pix', created_at timestamptz default now());
+create table if not exists goals(id uuid primary key default gen_random_uuid(), user_id uuid references auth.users(id) on delete cascade, name text not null, target numeric not null default 0, saved numeric not null default 0, deadline date, created_at timestamptz default now());
+create table if not exists accounts(id uuid primary key default gen_random_uuid(), user_id uuid references auth.users(id) on delete cascade, name text not null, amount numeric not null default 0, due_day int, recurring boolean default false, created_at timestamptz default now());
+alter table profiles enable row level security; alter table settings enable row level security; alter table transactions enable row level security; alter table goals enable row level security; alter table accounts enable row level security;
+create policy "own profiles" on profiles for all using (auth.uid()=id) with check (auth.uid()=id);
+create policy "own settings" on settings for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own transactions" on transactions for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own goals" on goals for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+create policy "own accounts" on accounts for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
